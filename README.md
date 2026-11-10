@@ -1,4 +1,4 @@
-# Blitz Tech — Complete Developer Handover
+# Blitz Tech - Comprehensive README as implementation guide
 
 ## 1. What this project is
 
