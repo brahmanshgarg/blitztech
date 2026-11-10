@@ -10,10 +10,10 @@ The user can:
 2. Open the navigation menu.
 3. Choose one of four top-level sections.
 4. Choose an item inside that section.
-5. View a placeholder destination panel.
+5. Either open an external destination or view a placeholder destination panel.
 6. Go back one level or close the menu completely.
 
-This is currently a **front-end prototype**. It does not load data from a server, and the destination panels do not yet navigate to real pages. The content is stored locally in the React source file.
+This is currently a **front-end prototype**. It does not load data from a server. Most destination panels are still previews, while selected items can now open external URLs configured in the local React data.
 
 The main technologies are:
 
@@ -374,10 +374,12 @@ The overlay heading also changes to the active category's title and note.
 
 ### State 3: Selected-item preview
 
-When a user clicks a subsection card, `selectedItem` receives that item:
+When a user clicks a subsection card without an `externalUrl`, `selectedItem` receives that item:
 
 ```jsx
-onClick={() => onChoose(item)}
+{...(item.externalUrl
+  ? { href: item.externalUrl, target: "_blank", rel: "noreferrer" }
+  : { onClick: () => onChoose(item) })}
 ```
 
 The selected item is then shown in a larger preview panel:
@@ -397,6 +399,63 @@ The preview currently includes placeholder text:
 > This is a prototype destination. Replace this panel with your actual page or route.
 
 This is the place to add real content, a link, or routing later.
+
+### External destinations
+
+An item can bypass the preview by adding an optional `externalUrl` property:
+
+```jsx
+{
+  title: "The line-up",
+  description: "Browse the full programme and schedule.",
+  tag: "PROGRAMME",
+  externalUrl: "https://www.google.com"
+}
+```
+
+The current example links are:
+
+| Item | Destination |
+|---|---|
+| The line-up | `https://www.google.com` |
+| Workshops | `https://www.bing.com` |
+| People | `https://www.mnit.ac.in` |
+
+Items without `externalUrl`, such as `What's on`, continue to open the existing selected-item preview.
+
+The `DetailCard` component chooses the correct HTML element:
+
+```jsx
+const CardElement = item.externalUrl ? motion.a : motion.button;
+```
+
+For an external item, it renders an animated anchor:
+
+```jsx
+<CardElement
+  className="detail-card"
+  href={item.externalUrl}
+  target="_blank"
+  rel="noreferrer"
+>
+  ...
+</CardElement>
+```
+
+For a normal item, it renders an animated button and calls `onChoose(item)`:
+
+```jsx
+<CardElement
+  className="detail-card"
+  onClick={() => onChoose(item)}
+>
+  ...
+</CardElement>
+```
+
+`target="_blank"` opens the external destination in a new browser tab. `rel="noreferrer"` prevents the destination from receiving the originating page URL. To use the same tab instead, remove `target` and `rel`.
+
+This design is extensible because adding or removing a destination requires changing only the data object. The `DetailCard` component already handles both behaviors.
 
 ---
 
@@ -472,15 +531,26 @@ The callback sets `activeSection`, which causes the subsection cards to replace 
 
 ### Selecting a subsection
 
-Each `DetailCard` receives `onChoose={setSelectedItem}`.
+Each `DetailCard` receives `onChoose={setSelectedItem}`. The component checks whether the item has an `externalUrl`.
 
-Its click handler passes the clicked item:
+For a preview item, its click handler passes the clicked item:
 
 ```jsx
 onClick={() => onChoose(item)}
 ```
 
-This changes the content to the selected-item preview panel.
+This changes the content to the selected-item preview panel. For an external item, the card is an anchor and the browser follows its `href` instead; `setSelectedItem` is not called.
+
+To add another external destination, add the property to an item:
+
+```jsx
+{
+  title: "New destination",
+  description: "A useful external resource.",
+  tag: "LINK",
+  externalUrl: "https://example.com"
+}
+```
 
 ### Going back from the selected-item preview
 
@@ -579,7 +649,7 @@ Framer Motion is only used in `src/main.jsx`. The CSS file still controls the st
 There are five main uses in this project:
 
 1. `CassetteCard` uses `motion.button`.
-2. `DetailCard` uses `motion.button`.
+2. `DetailCard` uses either `motion.button` or `motion.a`, depending on whether the item has an `externalUrl`.
 3. The full-screen menu uses `motion.section`.
 4. The selected-item preview uses `motion.div`.
 5. The category list and detail grid use `motion.div` containers.
@@ -628,10 +698,12 @@ Odd-indexed cards rotate one degree and even-indexed cards rotate negative one d
 
 ### `DetailCard`: subsection cards
 
-The second-level cards use the same shared entrance animation:
+The second-level cards use the same shared entrance animation. `DetailCard` chooses an animated button for preview items and an animated anchor for external items:
 
 ```jsx
-<motion.button
+const CardElement = item.externalUrl ? motion.a : motion.button;
+
+<CardElement
   className="detail-card"
   custom={index}
   variants={cardVariants}
@@ -640,10 +712,12 @@ The second-level cards use the same shared entrance animation:
   exit="exit"
   whileHover={{ y: -5, rotate: index % 2 ? -0.5 : 0.5 }}
   whileTap={{ scale: 0.985 }}
-  onClick={() => onChoose(item)}
+  {...(item.externalUrl
+    ? { href: item.externalUrl, target: "_blank", rel: "noreferrer" }
+    : { onClick: () => onChoose(item) })}
 >
   ...
-</motion.button>
+</CardElement>
 ```
 
 The behavior differs slightly from the cassette cards:
@@ -651,9 +725,10 @@ The behavior differs slightly from the cassette cards:
 - Hover moves the card upward with `y: -5`.
 - Hover rotation is smaller, at half a degree.
 - Pressing the card scales it down to `0.985`.
-- Clicking still calls the normal React callback and selects the item.
+- Preview items call the normal React callback and select the item.
+- External items follow their `href` as normal links; they do not open the preview.
 
-Framer Motion does not handle the selection itself. React state handles selection; Framer Motion only animates the visual result.
+Framer Motion does not decide whether a destination is external. The optional `externalUrl` data field decides which element is rendered; Framer Motion only animates the resulting button or link.
 
 ### The full-screen overlay
 
@@ -1086,7 +1161,22 @@ The selected-item branch is inside `App`:
 ) : ...}
 ```
 
-Replace the placeholder content with the real destination UI, or use a router if the application needs separate URLs.
+Items without an `externalUrl` use this branch. Replace the placeholder content with the real destination UI, or use a router if the application needs separate internal URLs. Items with an `externalUrl` do not enter this branch; they render as links from `DetailCard`.
+
+### Add an external destination
+
+Add `externalUrl` to the desired item in the `navigation` array:
+
+```jsx
+{
+  title: "Research",
+  description: "Visit the research resource.",
+  tag: "EXTERNAL",
+  externalUrl: "https://example.com"
+}
+```
+
+Do not add an empty string. If the property is absent, the item intentionally remains an in-app preview. The current component opens external URLs in a new tab and preserves the same Framer Motion hover and tap animations.
 
 ### Add real routes
 
@@ -1631,7 +1721,7 @@ Before handing this project to another developer:
 
 These are intentional prototype limitations, not missing setup steps:
 
-- The destination panel is a placeholder rather than a real page.
+- Most destination panels are placeholders rather than real pages; three example items currently link to Google, Bing, and MNIT.
 - There is no backend or API.
 - There is no database.
 - There is no routing library.
@@ -1639,4 +1729,4 @@ These are intentional prototype limitations, not missing setup steps:
 - There is no automated test suite in `package.json`.
 - Fonts are loaded from Google Fonts in `index.html`, so the final visual appearance depends on network access unless fonts are later self-hosted.
 
-The safest first extension is to replace the selected-item placeholder with real content while keeping the existing state flow. Add routing only when the desired URL and browser-history behavior have been agreed.
+The safest next extension is to add an `externalUrl` only to items that should leave the prototype, or replace the selected-item placeholder with real internal content. Add routing only when the desired URL and browser-history behavior have been agreed.

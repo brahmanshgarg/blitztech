@@ -13,7 +13,7 @@ const navigation = [
     color: "peach",
     items: [
       { title: "What's on", description: "A quick look at everything happening.", tag: "OVERVIEW" },
-      { title: "The line-up", description: "Browse the full programme and schedule.", tag: "PROGRAMME" },
+      { title: "The line-up", description: "Browse the full programme and schedule.", tag: "PROGRAMME", externalUrl: "https://www.google.com" },
       { title: "Places to go", description: "Explore spaces, stages and experiences.", tag: "VENUES" },
       { title: "The field guide", description: "A curated list of ideas, people and things.", tag: "GUIDE" }
     ]
@@ -25,7 +25,7 @@ const navigation = [
     note: "Ideas become things",
     color: "mint",
     items: [
-      { title: "Workshops", description: "Get hands-on and learn by making.", tag: "LEARN" },
+      { title: "Workshops", description: "Get hands-on and learn by making.", tag: "LEARN", externalUrl: "https://www.bing.com" },
       { title: "Challenges", description: "Put your skills to the test.", tag: "COMPETE" },
       { title: "Showcase", description: "See what the community has made.", tag: "EXPLORE" }
     ]
@@ -37,7 +37,7 @@ const navigation = [
     note: "Good things happen together",
     color: "lilac",
     items: [
-      { title: "People", description: "Meet the people behind the ideas.", tag: "TEAM" },
+      { title: "People", description: "Meet the people behind the ideas.", tag: "TEAM", externalUrl: "https://www.mnit.ac.in" },
       { title: "Partners", description: "The friends who make it possible.", tag: "NETWORK" },
       { title: "Get involved", description: "Find your way into the community.", tag: "JOIN IN" }
     ]
@@ -112,8 +112,10 @@ function CassetteCard({ section, index, onClick }) {
 }
 
 function DetailCard({ item, index, onChoose }) {
+  const CardElement = item.externalUrl ? motion.a : motion.button;
+
   return (
-    <motion.button
+    <CardElement
       className="detail-card"
       custom={index}
       variants={cardVariants}
@@ -122,13 +124,15 @@ function DetailCard({ item, index, onChoose }) {
       exit="exit"
       whileHover={{ y: -5, rotate: index % 2 ? -0.5 : 0.5 }}
       whileTap={{ scale: 0.985 }}
-      onClick={() => onChoose(item)}
+      {...(item.externalUrl
+        ? { href: item.externalUrl, target: "_blank", rel: "noreferrer" }
+        : { onClick: () => onChoose(item) })}
     >
       <span className="detail-tag">{item.tag}</span>
       <span className="detail-title">{item.title}</span>
       <span className="detail-description">{item.description}</span>
       <span className="detail-bottom"><span>OPEN SECTION</span><ArrowUpRight size={18} /></span>
-    </motion.button>
+    </CardElement>
   );
 }
 
