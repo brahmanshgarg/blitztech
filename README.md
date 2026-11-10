@@ -1,4 +1,4 @@
-# Blitz Tech - Comprehensive README as implementation guide
+# Blitz Tech - Implementation guide
 
 ## 1. What this project is
 
