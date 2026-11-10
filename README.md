@@ -1,8 +1,8 @@
-# Field Notes — Complete Developer Handover
+# Blitz Tech — Complete Developer Handover
 
 ## 1. What this project is
 
-This project is a small interactive website prototype called **Field Notes**. It presents a retro-inspired landing page and a full-screen, nested navigation menu.
+This project is a small interactive website prototype called **Blitz Tech**. It presents a retro-inspired landing page and a full-screen, nested navigation menu.
 
 The user can:
 

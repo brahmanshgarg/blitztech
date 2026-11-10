@@ -101,7 +101,7 @@ function CassetteCard({ section, index, onClick }) {
     >
       <span className="cassette-number">{section.number}</span>
       <span className="cassette-label">
-        <span className="cassette-kicker">FIELD NOTES / INDEX</span>
+        <span className="cassette-kicker">BLITZ TECH / INDEX</span>
         <strong>{section.title}</strong>
         <small>{section.note}</small>
       </span>
@@ -159,8 +159,8 @@ function App() {
       <Landscape />
       <header className="topbar">
         <a className="brand" href="#" onClick={(e) => { e.preventDefault(); closeMenu(); }}>
-          <span className="brand-mark">FN<span>✳</span></span>
-          <span className="brand-name">FIELD NOTES<small>AN INDEPENDENT GATHERING</small></span>
+          <span className="brand-mark">BT<span>✳</span></span>
+          <span className="brand-name">BLITZ TECH<small>AN INDEPENDENT GATHERING</small></span>
         </a>
         <div className="top-actions">
           <span className="edition">VOL. 01 / 2026</span>
@@ -222,7 +222,7 @@ function App() {
             </div>
 
             <footer className="overlay-footer">
-              <span>FIELD NOTES © 2026</span>
+              <span>BLITZ TECH © 2026</span>
               <span>{selectedItem ? "SECTION PREVIEW" : active ? `${active.number} / SUBSECTIONS` : "SELECT A LABEL TO CONTINUE"}</span>
               <span>MADE FOR THE CURIOUS ✳</span>
             </footer>
