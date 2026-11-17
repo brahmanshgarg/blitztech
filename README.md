@@ -951,6 +951,38 @@ The landscape is made from:
 - Inline SVG paths for the hills.
 - Text symbols for flowers and birds.
 
+### Time-based sun position
+
+The sun position is calculated from the browser's current local time. `Landscape`
+stores the current time in React state and refreshes it once per minute:
+
+```jsx
+const [currentTime, setCurrentTime] = useState(() => new Date());
+
+useEffect(() => {
+  const timer = window.setInterval(() => setCurrentTime(new Date()), 60 * 1000);
+  return () => window.clearInterval(timer);
+}, []);
+```
+
+The day is represented by a 12-hour daylight window from 6:00 AM to 6:00 PM.
+The current time is converted into a progress value between `0` and `1`, then
+used to position the sun along its path:
+
+```jsx
+const daylightProgress = Math.min(
+  1,
+  Math.max(0, (minutesSinceMidnight - sunrise) / (sunset - sunrise))
+);
+const sunLeft = 8 + daylightProgress * 76;
+const sunTop = 10 + daylightProgress * 55;
+```
+
+At or before sunrise, the sun stays at the start of the path. At or after
+sunset, it stays at the end of the path. The calculated values are applied as
+inline `left` and `top` styles, while CSS transitions make the movement smooth
+when the position updates.
+
 The hills use SVG because SVG is good at drawing scalable shapes:
 
 ```jsx
